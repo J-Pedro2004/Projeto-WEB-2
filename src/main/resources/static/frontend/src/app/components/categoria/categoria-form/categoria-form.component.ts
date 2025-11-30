@@ -36,8 +36,11 @@ import { Categoria } from '../../../models/categoria.model';
                     [class.is-invalid]="categoriaForm.get('nome')?.invalid && categoriaForm.get('nome')?.touched"
                     placeholder="Ex: Ficção Científica"
                   >
-                  <div class="invalid-feedback" *ngIf="categoriaForm.get('nome')?.invalid && categoriaForm.get('nome')?.touched">
+                  <div class="invalid-feedback" *ngIf="categoriaForm.get('nome')?.errors?.['required']">
                     Nome é obrigatório
+                  </div>
+                  <div class="invalid-feedback" *ngIf="categoriaForm.get('nome')?.errors?.['minlength']">
+                    Nome deve ter no mínimo 3 caracteres
                   </div>
                 </div>
               </div>
@@ -72,9 +75,13 @@ import { Categoria } from '../../../models/categoria.model';
                 class="form-control"
                 id="descricao"
                 formControlName="descricao"
+                [class.is-invalid]="categoriaForm.get('descricao')?.invalid && categoriaForm.get('descricao')?.touched"
                 rows="3"
                 placeholder="Descreva o tipo de livros desta categoria..."
               ></textarea>
+              <div class="invalid-feedback" *ngIf="categoriaForm.get('descricao')?.errors?.['minlength']">
+                Descrição deve ter no mínimo 5 caracteres
+              </div>
             </div>
 
             <div class="mb-3">
@@ -177,8 +184,8 @@ export class CategoriaFormComponent implements OnInit {
 
   createForm(): FormGroup {
     return this.fb.group({
-      nome: ['', [Validators.required, Validators.minLength(2)]],
-      descricao: [''],
+      nome: ['', [Validators.required, Validators.minLength(3)]],
+      descricao: ['', [Validators.minLength(5)]],
       cor: ['#28a745'],
       ativa: [true]
     });

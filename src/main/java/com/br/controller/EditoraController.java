@@ -71,6 +71,17 @@ public class EditoraController {
     @PostMapping
     public ResponseEntity<?> incluir(@RequestBody Editora editora) {
         try {
+            // Validações de Unicidade
+            if (editora.getCnpj() != null && !editora.getCnpj().isEmpty() && editoraRepository.existsByCnpj(editora.getCnpj())) {
+                return ResponseEntity.status(400).body(Collections.singletonMap("error", "CNPJ já cadastrado."));
+            }
+            if (editora.getRazaoSocial() != null && !editora.getRazaoSocial().isEmpty() && editoraRepository.existsByRazaoSocial(editora.getRazaoSocial())) {
+                return ResponseEntity.status(400).body(Collections.singletonMap("error", "Razão Social já cadastrada."));
+            }
+            if (editora.getTelefone() != null && !editora.getTelefone().isEmpty() && editoraRepository.existsByTelefone(editora.getTelefone())) {
+                return ResponseEntity.status(400).body(Collections.singletonMap("error", "Telefone já cadastrado."));
+            }
+
             Editora salva = editoraRepository.save(editora);
             return ResponseEntity.status(201).body((Object) salva);
         } catch (Exception e) {
@@ -82,6 +93,17 @@ public class EditoraController {
     public ResponseEntity<?> alterar(@PathVariable Long id, @RequestBody Editora editora) {
         var opt = editoraRepository.findById(id);
         if (opt.isPresent()) {
+            // Validações de Unicidade
+            if (editora.getCnpj() != null && !editora.getCnpj().isEmpty() && editoraRepository.existsByCnpjAndIdNot(editora.getCnpj(), id)) {
+                return ResponseEntity.status(400).body(Collections.singletonMap("error", "CNPJ já cadastrado para outra editora."));
+            }
+            if (editora.getRazaoSocial() != null && !editora.getRazaoSocial().isEmpty() && editoraRepository.existsByRazaoSocialAndIdNot(editora.getRazaoSocial(), id)) {
+                return ResponseEntity.status(400).body(Collections.singletonMap("error", "Razão Social já cadastrada para outra editora."));
+            }
+            if (editora.getTelefone() != null && !editora.getTelefone().isEmpty() && editoraRepository.existsByTelefoneAndIdNot(editora.getTelefone(), id)) {
+                return ResponseEntity.status(400).body(Collections.singletonMap("error", "Telefone já cadastrado para outra editora."));
+            }
+
             var editoraExistente = opt.get();
             editoraExistente.setNome(editora.getNome());
             editoraExistente.setRazaoSocial(editora.getRazaoSocial());

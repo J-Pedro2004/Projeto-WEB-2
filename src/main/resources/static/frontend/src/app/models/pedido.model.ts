@@ -39,12 +39,13 @@ export interface PedidoCreate {
   status: StatusPedido;
   nomeCliente: string;
   emailCliente?: string;
+  telefoneCliente?: string;
   enderecoEntrega?: string;
   observacoes?: string;
   itens: {
     livro: { id: number };
     quantidade: number;
-    preco: number;
+    precoUnitario: number;
   }[];
 }
 

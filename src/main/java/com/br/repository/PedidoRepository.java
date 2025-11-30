@@ -34,4 +34,12 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
 
     @Query("SELECT DISTINCT p FROM Pedido p LEFT JOIN FETCH p.itens i LEFT JOIN FETCH i.livro")
     List<Pedido> findAllWithItens();
+
+    boolean existsByTelefoneClienteAndNomeClienteNot(String telefoneCliente, String nomeCliente);
+    
+    boolean existsByTelefoneClienteAndNomeClienteNotAndIdNot(String telefoneCliente, String nomeCliente, Long id);
+
+    boolean existsByEmailClienteAndNomeClienteNot(String emailCliente, String nomeCliente);
+    
+    boolean existsByEmailClienteAndNomeClienteNotAndIdNot(String emailCliente, String nomeCliente, Long id);
 }

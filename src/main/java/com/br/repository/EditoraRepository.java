@@ -17,6 +17,15 @@ public interface EditoraRepository extends JpaRepository<Editora, Long> {
     List<Editora> findByAtivaTrue();
     
     Optional<Editora> findByNome(String nome);
+
+    boolean existsByCnpj(String cnpj);
+    boolean existsByCnpjAndIdNot(String cnpj, Long id);
+
+    boolean existsByRazaoSocial(String razaoSocial);
+    boolean existsByRazaoSocialAndIdNot(String razaoSocial, Long id);
+
+    boolean existsByTelefone(String telefone);
+    boolean existsByTelefoneAndIdNot(String telefone, Long id);
     
     Optional<Editora> findByCnpj(String cnpj);
     

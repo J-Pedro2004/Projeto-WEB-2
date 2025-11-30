@@ -1,5 +1,6 @@
 package com.br.controller;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
@@ -145,6 +146,30 @@ public class PedidoController {
     public ResponseEntity<?> incluir(@RequestBody Pedido pedido) {
         System.out.println("Tentando criar pedido para: " + pedido.getNomeCliente());
         try {
+            // Validação: Telefone não pode ser usado por outro cliente
+            if (pedido.getTelefoneCliente() != null && !pedido.getTelefoneCliente().isEmpty()) {
+                boolean telefoneEmUsoPorOutro = pedidoRepository.existsByTelefoneClienteAndNomeClienteNot(
+                    pedido.getTelefoneCliente(), 
+                    pedido.getNomeCliente()
+                );
+                
+                if (telefoneEmUsoPorOutro) {
+                    return ResponseEntity.status(400).body(Collections.singletonMap("error", "Este número de telefone já está associado a outro cliente."));
+                }
+            }
+
+            // Validação: Email não pode ser usado por outro cliente
+            if (pedido.getEmailCliente() != null && !pedido.getEmailCliente().isEmpty()) {
+                boolean emailEmUsoPorOutro = pedidoRepository.existsByEmailClienteAndNomeClienteNot(
+                    pedido.getEmailCliente(), 
+                    pedido.getNomeCliente()
+                );
+                
+                if (emailEmUsoPorOutro) {
+                    return ResponseEntity.status(400).body(Collections.singletonMap("error", "Este email já está associado a outro cliente."));
+                }
+            }
+
             // Gerar número único do pedido
             pedido.setNumero("PED-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
             
@@ -155,11 +180,31 @@ public class PedidoController {
                     
                     // Validar se o livro existe e obter preço atualizado
                     if (item.getLivro() != null && item.getLivro().getId() != null) {
-                        livroRepository.findById(item.getLivro().getId())
-                            .ifPresent(livro -> {
-                                item.setLivro(livro);
-                                item.setPrecoUnitario(livro.getPreco()); // Garante preço do banco
-                            });
+                        var livroOpt = livroRepository.findById(item.getLivro().getId());
+                        if (livroOpt.isPresent()) {
+                            var livro = livroOpt.get();
+                            
+                            // Validação: Livro deve estar disponível
+                            if (!livro.isDisponivel()) {
+                                return ResponseEntity.status(400).body(Collections.singletonMap("error", "O livro '" + livro.getTitulo() + "' não está disponível para venda."));
+                            }
+
+                            // Controle de Estoque (apenas se não for cancelado)
+                            if (pedido.getStatus() != StatusPedido.CANCELADO) {
+                                if (livro.getQuantidadeEstoque() < item.getQuantidade()) {
+                                    return ResponseEntity.status(400).body(Collections.singletonMap("error", "Estoque insuficiente para o livro '" + livro.getTitulo() + "'. Disponível: " + livro.getQuantidadeEstoque()));
+                                }
+                                // Baixa no estoque
+                                livro.setQuantidadeEstoque(livro.getQuantidadeEstoque() - item.getQuantidade());
+                                if (livro.getQuantidadeEstoque() <= 0) {
+                                    livro.setDisponivel(false);
+                                }
+                                livroRepository.save(livro);
+                            }
+                            
+                            item.setLivro(livro);
+                            item.setPrecoUnitario(livro.getPreco()); // Garante preço do banco
+                        }
                     }
                     
                     // Calcular valores do item
@@ -206,6 +251,46 @@ public class PedidoController {
         if (opt.isPresent()) {
             var pedidoExistente = opt.get();
             try {
+                // Validação: Telefone não pode ser usado por outro cliente
+                if (pedido.getTelefoneCliente() != null && !pedido.getTelefoneCliente().isEmpty()) {
+                    boolean telefoneEmUsoPorOutro = pedidoRepository.existsByTelefoneClienteAndNomeClienteNotAndIdNot(
+                        pedido.getTelefoneCliente(), 
+                        pedido.getNomeCliente(),
+                        id
+                    );
+                    
+                    if (telefoneEmUsoPorOutro) {
+                        return ResponseEntity.status(400).body(Collections.singletonMap("error", "Este número de telefone já está associado a outro cliente."));
+                    }
+                }
+
+                // Validação: Email não pode ser usado por outro cliente
+                if (pedido.getEmailCliente() != null && !pedido.getEmailCliente().isEmpty()) {
+                    boolean emailEmUsoPorOutro = pedidoRepository.existsByEmailClienteAndNomeClienteNotAndIdNot(
+                        pedido.getEmailCliente(), 
+                        pedido.getNomeCliente(),
+                        id
+                    );
+                    
+                    if (emailEmUsoPorOutro) {
+                        return ResponseEntity.status(400).body(Collections.singletonMap("error", "Este email já está associado a outro cliente."));
+                    }
+                }
+
+                // Devolver estoque dos itens antigos (se o pedido não estava cancelado)
+                if (pedidoExistente.getStatus() != StatusPedido.CANCELADO && pedidoExistente.getItens() != null) {
+                    for (ItemPedido itemAntigo : pedidoExistente.getItens()) {
+                        if (itemAntigo.getLivro() != null) {
+                             var livro = itemAntigo.getLivro();
+                             livro.setQuantidadeEstoque(livro.getQuantidadeEstoque() + itemAntigo.getQuantidade());
+                             if (livro.getQuantidadeEstoque() > 0) {
+                                 livro.setDisponivel(true);
+                             }
+                             livroRepository.save(livro);
+                        }
+                    }
+                }
+
                 // Atualizar dados do mestre
                 pedidoExistente.setNomeCliente(pedido.getNomeCliente());
                 pedidoExistente.setEmailCliente(pedido.getEmailCliente());
@@ -213,8 +298,8 @@ public class PedidoController {
                 pedidoExistente.setEnderecoEntrega(pedido.getEnderecoEntrega());
                 pedidoExistente.setStatus(pedido.getStatus());
                 pedidoExistente.setDataEntregaPrevista(pedido.getDataEntregaPrevista());
-                pedidoExistente.setValorFrete(pedido.getValorFrete());
-                pedidoExistente.setValorDesconto(pedido.getValorDesconto());
+                pedidoExistente.setValorFrete(pedido.getValorFrete() != null ? pedido.getValorFrete() : BigDecimal.ZERO);
+                pedidoExistente.setValorDesconto(pedido.getValorDesconto() != null ? pedido.getValorDesconto() : BigDecimal.ZERO);
                 pedidoExistente.setObservacoes(pedido.getObservacoes());
                 
                 // Atualizar itens
@@ -224,8 +309,30 @@ public class PedidoController {
                     for (ItemPedido item : pedido.getItens()) {
                         item.setPedido(pedidoExistente);
                         if (item.getLivro() != null && item.getLivro().getId() != null) {
-                            livroRepository.findById(item.getLivro().getId())
-                                .ifPresent(item::setLivro);
+                            var livroOpt = livroRepository.findById(item.getLivro().getId());
+                            if (livroOpt.isPresent()) {
+                                var livro = livroOpt.get();
+                                
+                                // Validação: Livro deve estar disponível
+                                if (!livro.isDisponivel()) {
+                                    throw new RuntimeException("O livro '" + livro.getTitulo() + "' não está disponível para venda.");
+                                }
+
+                                // Controle de Estoque (apenas se o novo status não for cancelado)
+                                if (pedido.getStatus() != StatusPedido.CANCELADO) {
+                                    if (livro.getQuantidadeEstoque() < item.getQuantidade()) {
+                                         throw new RuntimeException("Estoque insuficiente para o livro '" + livro.getTitulo() + "'. Disponível: " + livro.getQuantidadeEstoque());
+                                    }
+                                    // Baixa no estoque
+                                    livro.setQuantidadeEstoque(livro.getQuantidadeEstoque() - item.getQuantidade());
+                                    if (livro.getQuantidadeEstoque() <= 0) {
+                                        livro.setDisponivel(false);
+                                    }
+                                    livroRepository.save(livro);
+                                }
+                                
+                                item.setLivro(livro);
+                            }
                         }
                         item.calcularSubtotal();
                         pedidoExistente.getItens().add(item);
@@ -235,11 +342,25 @@ public class PedidoController {
                 // Recalcular totais
                 pedidoExistente.calcularValorTotal();
                 pedidoRepository.save(pedidoExistente);
+
+                // Inicializar lazy loading para retorno
+                Hibernate.initialize(pedidoExistente.getItens());
+                if (pedidoExistente.getItens() != null) {
+                    for (ItemPedido item : pedidoExistente.getItens()) {
+                        Hibernate.initialize(item.getLivro());
+                        if (item.getLivro() != null) {
+                            Hibernate.initialize(item.getLivro().getAutor());
+                            Hibernate.initialize(item.getLivro().getEditora());
+                            Hibernate.initialize(item.getLivro().getCategorias());
+                        }
+                    }
+                }
                 
                 return ResponseEntity.ok((Object) pedidoExistente);
                 
             } catch (Exception e) {
-                return ResponseEntity.status(500).body(Collections.singletonMap("error", e.getMessage()));
+                e.printStackTrace();
+                return ResponseEntity.status(500).body(Collections.singletonMap("error", "Erro ao atualizar pedido: " + e.getMessage()));
             }
         } else {
             return ResponseEntity.status(404).body(Collections.singletonMap("error", "Pedido não encontrado para alteração."));
@@ -254,6 +375,44 @@ public class PedidoController {
         var opt = pedidoRepository.findById(id);
         if (opt.isPresent()) {
             var pedido = opt.get();
+            StatusPedido statusAntigo = pedido.getStatus();
+            
+            // Se o status não mudou, não faz nada
+            if (statusAntigo == status) {
+                 return ResponseEntity.ok(Collections.singletonMap("status", status.getDescricao()));
+            }
+
+            // Lógica de Estoque
+            // 1. Se estava CANCELADO e vai para outro status (reabertura): Consumir estoque
+            if (statusAntigo == StatusPedido.CANCELADO && status != StatusPedido.CANCELADO) {
+                 for (ItemPedido item : pedido.getItens()) {
+                     if (item.getLivro() != null) {
+                         var livro = item.getLivro();
+                         if (livro.getQuantidadeEstoque() < item.getQuantidade()) {
+                             return ResponseEntity.status(400).body(Collections.singletonMap("error", "Estoque insuficiente para reativar o pedido. Livro: " + livro.getTitulo()));
+                         }
+                         livro.setQuantidadeEstoque(livro.getQuantidadeEstoque() - item.getQuantidade());
+                         if (livro.getQuantidadeEstoque() <= 0) {
+                             livro.setDisponivel(false);
+                         }
+                         livroRepository.save(livro);
+                     }
+                 }
+            }
+            // 2. Se vai para CANCELADO (cancelamento): Devolver estoque
+            else if (statusAntigo != StatusPedido.CANCELADO && status == StatusPedido.CANCELADO) {
+                 for (ItemPedido item : pedido.getItens()) {
+                     if (item.getLivro() != null) {
+                         var livro = item.getLivro();
+                         livro.setQuantidadeEstoque(livro.getQuantidadeEstoque() + item.getQuantidade());
+                         if (livro.getQuantidadeEstoque() > 0) {
+                             livro.setDisponivel(true);
+                         }
+                         livroRepository.save(livro);
+                     }
+                 }
+            }
+
             pedido.setStatus(status);
             pedidoRepository.save(pedido);
             return ResponseEntity.ok(Collections.singletonMap("status", status.getDescricao()));
@@ -271,6 +430,21 @@ public class PedidoController {
         var opt = pedidoRepository.findById(id);
         if (opt.isPresent()) {
             var pedido = opt.get();
+            
+            // Devolver estoque se o pedido não estiver cancelado
+            if (pedido.getStatus() != StatusPedido.CANCELADO) {
+                 for (ItemPedido item : pedido.getItens()) {
+                     if (item.getLivro() != null) {
+                         var livro = item.getLivro();
+                         livro.setQuantidadeEstoque(livro.getQuantidadeEstoque() + item.getQuantidade());
+                         if (livro.getQuantidadeEstoque() > 0) {
+                             livro.setDisponivel(true);
+                         }
+                         livroRepository.save(livro);
+                     }
+                 }
+            }
+            
             pedidoRepository.delete(pedido);
             return ResponseEntity.noContent().build();
         } else {

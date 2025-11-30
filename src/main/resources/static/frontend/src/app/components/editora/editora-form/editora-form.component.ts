@@ -36,11 +36,14 @@ import { EditoraCreate } from '../../../models/editora.model';
                 <label class="form-label">CNPJ *</label>
                 <input type="text" class="form-control" formControlName="cnpj"
                   [class.is-invalid]="form.get('cnpj')?.invalid && form.get('cnpj')?.touched">
-                <div class="invalid-feedback">CNPJ é obrigatório</div>
+                <div class="invalid-feedback" *ngIf="form.get('cnpj')?.errors?.['required']">CNPJ é obrigatório</div>
+                <div class="invalid-feedback" *ngIf="form.get('cnpj')?.errors?.['minlength']">CNPJ incompleto (mínimo 14 dígitos)</div>
               </div>
               <div class="col-md-6 mb-3">
                 <label class="form-label">Telefone</label>
-                <input type="text" class="form-control" formControlName="telefone">
+                <input type="text" class="form-control" formControlName="telefone"
+                  [class.is-invalid]="form.get('telefone')?.invalid && form.get('telefone')?.touched">
+                <div class="invalid-feedback" *ngIf="form.get('telefone')?.errors?.['minlength']">Telefone incompleto (mínimo 10 dígitos)</div>
               </div>
             </div>
 
@@ -85,7 +88,9 @@ import { EditoraCreate } from '../../../models/editora.model';
                 </div>
                 <div class="col-md-5 mb-3">
                   <label class="form-label">CEP</label>
-                  <input type="text" class="form-control" formControlName="cep">
+                  <input type="text" class="form-control" formControlName="cep"
+                    [class.is-invalid]="form.get('endereco.cep')?.invalid && form.get('endereco.cep')?.touched">
+                  <div class="invalid-feedback" *ngIf="form.get('endereco.cep')?.errors?.['minlength']">CEP incompleto (mínimo 8 dígitos)</div>
                 </div>
               </div>
             </div>
@@ -137,9 +142,9 @@ export class EditoraFormComponent implements OnInit {
     this.form = this.fb.group({
       nome: ['', Validators.required],
       razaoSocial: ['', Validators.required],
-      cnpj: ['', Validators.required],
-      telefone: [''],
-      email: ['', Validators.email],
+      cnpj: ['', [Validators.required, Validators.minLength(14)]],
+      telefone: ['', [Validators.minLength(10)]],
+      email: ['', [Validators.email]],
       website: [''],
       endereco: this.fb.group({
         logradouro: [''],
@@ -147,7 +152,7 @@ export class EditoraFormComponent implements OnInit {
         bairro: [''],
         cidade: [''],
         uf: [''],
-        cep: ['']
+        cep: ['', [Validators.minLength(8)]]
       })
     });
   }
@@ -192,7 +197,24 @@ export class EditoraFormComponent implements OnInit {
         this.voltar();
       },
       error: (err: any) => {
-        alert(`Erro ao ${this.isEditMode ? 'atualizar' : 'criar'} editora: ` + err.message);
+        console.error('Erro detalhado:', err);
+        let msg = 'Erro desconhecido';
+        
+        // Tenta extrair a mensagem de erro de várias formas
+        if (err.error) {
+          if (typeof err.error === 'object' && err.error.error) {
+            msg = err.error.error; // Formato { "error": "Mensagem" }
+          } else if (typeof err.error === 'string') {
+            msg = err.error; // Backend retornou string direta
+          } else {
+             // Tenta ver se tem message dentro do objeto de erro (padrão Spring Boot as vezes)
+             msg = err.error.message || JSON.stringify(err.error);
+          }
+        } else if (err.message) {
+          msg = err.message;
+        }
+
+        alert(`Erro ao ${this.isEditMode ? 'atualizar' : 'criar'} editora: ` + msg);
         this.loading = false;
       }
     });

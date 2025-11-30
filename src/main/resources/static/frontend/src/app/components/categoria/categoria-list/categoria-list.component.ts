@@ -214,7 +214,11 @@ export class CategoriaListComponent implements OnInit {
       },
       error: (error: any) => {
         console.error('Erro ao excluir categoria:', error);
-        alert('Erro ao excluir categoria!');
+        if (error.error && error.error.error) {
+          alert(error.error.error);
+        } else {
+          alert('Erro ao excluir categoria!');
+        }
       }
     });
   }

@@ -98,6 +98,11 @@ public class LivroController {
                     livroExistente.setPreco(livro.getPreco());
                     livroExistente.setQuantidadeEstoque(livro.getQuantidadeEstoque());
                     livroExistente.setDisponivel(livro.isDisponivel());
+                    
+                    // Regra de Negócio: Se estoque for zero ou negativo, o livro fica indisponível automaticamente
+                    if (livroExistente.getQuantidadeEstoque() <= 0) {
+                        livroExistente.setDisponivel(false);
+                    }
                     livroExistente.setSinopse(livro.getSinopse());
                     
                     // Atualiza Autor buscando do banco para evitar objeto parcial

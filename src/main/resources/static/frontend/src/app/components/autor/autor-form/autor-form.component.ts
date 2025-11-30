@@ -77,7 +77,11 @@ import { Autor } from '../../../models/autor.model';
                     id="nacionalidade"
                     formControlName="nacionalidade"
                     placeholder="Ex: Brasileira"
+                    [class.is-invalid]="autorForm.get('nacionalidade')?.invalid && autorForm.get('nacionalidade')?.touched"
                   >
+                  <div class="invalid-feedback" *ngIf="autorForm.get('nacionalidade')?.errors?.['minlength']">
+                    Nacionalidade muito curta
+                  </div>
                 </div>
               </div>
             </div>
@@ -174,7 +178,7 @@ export class AutorFormComponent implements OnInit {
       nome: ['', [Validators.required, Validators.minLength(2)]],
       sobrenome: ['', [Validators.minLength(2)]],
       dataNascimento: [''],
-      nacionalidade: [''],
+      nacionalidade: ['', [Validators.minLength(3)]],
       biografia: [''],
       ativo: [true]
     });

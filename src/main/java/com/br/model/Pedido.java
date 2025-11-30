@@ -3,6 +3,7 @@ package com.br.model;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -205,9 +206,12 @@ public class Pedido {
         if (itens != null) {
             subtotal = itens.stream()
                 .map(ItemPedido::getSubtotal)
+                .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         }
-        this.valorTotal = subtotal.add(valorFrete).subtract(valorDesconto);
+        BigDecimal frete = valorFrete != null ? valorFrete : BigDecimal.ZERO;
+        BigDecimal desconto = valorDesconto != null ? valorDesconto : BigDecimal.ZERO;
+        this.valorTotal = subtotal.add(frete).subtract(desconto);
     }
     
     @JsonIgnore
@@ -220,6 +224,7 @@ public class Pedido {
         if (itens == null) return BigDecimal.ZERO;
         return itens.stream()
             .map(ItemPedido::getSubtotal)
+            .filter(Objects::nonNull)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -87,8 +88,14 @@ public class CategoriaController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> excluir(@PathVariable Long id) {
         if (categoriaRepository.existsById(id)) {
-            categoriaRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
+            try {
+                categoriaRepository.deleteById(id);
+                return ResponseEntity.noContent().build();
+            } catch (DataIntegrityViolationException e) {
+                return ResponseEntity.status(409).body(Collections.singletonMap("error", "Não é possível excluir a categoria pois ela está vinculada a um ou mais livros."));
+            } catch (Exception e) {
+                return ResponseEntity.status(500).body(Collections.singletonMap("error", "Erro interno ao excluir categoria: " + e.getMessage()));
+            }
         } else {
             return ResponseEntity.status(404).body(Collections.singletonMap("error", "Categoria não encontrada para exclusão."));
         }

@@ -35,9 +35,13 @@ import { Livro } from '../../../models/livro.model';
                     class="form-control" 
                     formControlName="nomeCliente"
                     placeholder="Digite o nome do cliente"
+                    [class.is-invalid]="pedidoForm.get('nomeCliente')?.invalid && pedidoForm.get('nomeCliente')?.touched"
                   >
-                  <div class="text-danger" *ngIf="pedidoForm.get('nomeCliente')?.invalid && pedidoForm.get('nomeCliente')?.touched">
+                  <div class="invalid-feedback" *ngIf="pedidoForm.get('nomeCliente')?.errors?.['required']">
                     Nome é obrigatório
+                  </div>
+                  <div class="invalid-feedback" *ngIf="pedidoForm.get('nomeCliente')?.errors?.['minlength']">
+                    Nome deve ter no mínimo 3 caracteres
                   </div>
                 </div>
               </div>
@@ -65,7 +69,11 @@ import { Livro } from '../../../models/livro.model';
                     class="form-control" 
                     formControlName="telefoneCliente"
                     placeholder="(00) 00000-0000"
+                    [class.is-invalid]="pedidoForm.get('telefoneCliente')?.invalid && pedidoForm.get('telefoneCliente')?.touched"
                   >
+                  <div class="text-danger" *ngIf="pedidoForm.get('telefoneCliente')?.errors?.['minlength']">
+                    Telefone incompleto (mínimo 10 dígitos)
+                  </div>
                 </div>
               </div>
 
@@ -102,7 +110,11 @@ import { Livro } from '../../../models/livro.model';
                     formControlName="enderecoEntrega" 
                     rows="2"
                     placeholder="Rua, número, complemento, bairro, cidade, estado"
+                    [class.is-invalid]="pedidoForm.get('enderecoEntrega')?.invalid && pedidoForm.get('enderecoEntrega')?.touched"
                   ></textarea>
+                  <div class="invalid-feedback" *ngIf="pedidoForm.get('enderecoEntrega')?.errors?.['minlength']">
+                    Endereço deve ter no mínimo 5 caracteres
+                  </div>
                 </div>
               </div>
 
@@ -114,7 +126,11 @@ import { Livro } from '../../../models/livro.model';
                     formControlName="observacoes" 
                     rows="3"
                     placeholder="Observações sobre o pedido..."
+                    [class.is-invalid]="pedidoForm.get('observacoes')?.invalid && pedidoForm.get('observacoes')?.touched"
                   ></textarea>
+                  <div class="invalid-feedback" *ngIf="pedidoForm.get('observacoes')?.errors?.['minlength']">
+                    Observações devem ter no mínimo 5 caracteres
+                  </div>
                 </div>
               </div>
             </div>
@@ -133,8 +149,8 @@ import { Livro } from '../../../models/livro.model';
               <label class="form-label">Livro</label>
               <select class="form-select" [(ngModel)]="livroSelecionadoId">
                 <option [ngValue]="null">Selecione um livro...</option>
-                <option *ngFor="let livro of livros" [value]="livro.id">
-                  {{ livro.titulo }} - {{ livro.preco | currency:'BRL':'symbol':'1.2-2' }}
+                <option *ngFor="let livro of livros" [value]="livro.id" [disabled]="!livro.disponivel">
+                  {{ livro.titulo }} - {{ livro.preco | currency:'BRL':'symbol':'1.2-2' }} {{ !livro.disponivel ? '(Indisponível)' : '' }}
                 </option>
               </select>
             </div>
@@ -253,19 +269,20 @@ export class PedidoFormComponent implements OnInit {
     const hoje = new Date().toISOString().split('T')[0];
     
     this.pedidoForm = this.fb.group({
-      nomeCliente: ['', Validators.required],
+      nomeCliente: ['', [Validators.required, Validators.minLength(3)]],
       emailCliente: ['', [Validators.email]],
-      telefoneCliente: [''],
+      telefoneCliente: ['', [Validators.minLength(10)]],
       status: [StatusPedido.PENDENTE, Validators.required],
       dataPedido: [hoje, Validators.required],
-      enderecoEntrega: [''],
-      observacoes: ['']
+      enderecoEntrega: ['', [Validators.minLength(5)]],
+      observacoes: ['', [Validators.minLength(5)]]
     });
   }
 
   carregarLivros(): void {
     this.livroService.listar().subscribe({
       next: (livros) => {
+        // Não filtramos mais, para mostrar todos e validar na seleção
         this.livros = livros;
       },
       error: (error) => {
@@ -280,8 +297,9 @@ export class PedidoFormComponent implements OnInit {
         this.pedidoForm.patchValue({
           nomeCliente: pedido.nomeCliente,
           emailCliente: pedido.emailCliente,
+          telefoneCliente: pedido.telefoneCliente,
           status: pedido.status,
-          dataPedido: pedido.dataPedido,
+          dataPedido: pedido.dataPedido ? pedido.dataPedido.split('T')[0] : '',
           enderecoEntrega: pedido.enderecoEntrega,
           observacoes: pedido.observacoes
         });
@@ -309,6 +327,12 @@ export class PedidoFormComponent implements OnInit {
 
     const livro = this.livros.find(l => l.id == this.livroSelecionadoId);
     if (livro) {
+      // Validação de disponibilidade
+      if (!livro.disponivel) {
+        alert(`O livro "${livro.titulo}" não está disponível para venda.`);
+        return;
+      }
+
       // Verificar se já existe
       const itemExistente = this.itensPedido.find(i => i.livroId === livro.id);
       if (itemExistente) {
@@ -355,7 +379,7 @@ export class PedidoFormComponent implements OnInit {
     const itensMapeados = this.itensPedido.map(item => ({
       livro: { id: item.livroId },
       quantidade: item.quantidade,
-      preco: item.precoUnitario
+      precoUnitario: item.precoUnitario
     }));
 
     if (this.pedidoId) {
@@ -365,6 +389,7 @@ export class PedidoFormComponent implements OnInit {
         status: formValue.status,
         nomeCliente: formValue.nomeCliente,
         emailCliente: formValue.emailCliente,
+        telefoneCliente: formValue.telefoneCliente,
         enderecoEntrega: formValue.enderecoEntrega,
         observacoes: formValue.observacoes,
         itens: itensMapeados
@@ -377,7 +402,8 @@ export class PedidoFormComponent implements OnInit {
         },
         error: (error) => {
           console.error('Erro ao atualizar pedido:', error);
-          alert('Erro ao atualizar pedido!');
+          const msg = error.error?.error || 'Erro ao atualizar pedido!';
+          alert(msg);
           this.salvando = false;
         }
       });
@@ -387,6 +413,7 @@ export class PedidoFormComponent implements OnInit {
         status: formValue.status,
         nomeCliente: formValue.nomeCliente,
         emailCliente: formValue.emailCliente,
+        telefoneCliente: formValue.telefoneCliente,
         enderecoEntrega: formValue.enderecoEntrega,
         observacoes: formValue.observacoes,
         itens: itensMapeados
@@ -399,7 +426,8 @@ export class PedidoFormComponent implements OnInit {
         },
         error: (error) => {
           console.error('Erro ao criar pedido:', error);
-          alert('Erro ao criar pedido!');
+          const msg = error.error?.error || 'Erro ao criar pedido!';
+          alert(msg);
           this.salvando = false;
         }
       });
