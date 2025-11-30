@@ -1,0 +1,267 @@
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-shopping-cart me-2 text-primary"></i>Gerenciar Pedidos</h2>
+    <a routerLink="/pedidos/novo" class="btn btn-primary">
+      <i class="fas fa-plus me-2"></i>Novo Pedido
+    </a>
+  </div>
+
+  <!-- Filtros -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label for="searchInput" class="form-label">Pesquisar</label>
+          <input 
+            type="text" 
+            id="searchInput"
+            class="form-control" 
+            placeholder="Buscar por ID ou observações..."
+            [(ngModel)]="searchTerm"
+            (input)="onSearchChange()">
+        </div>
+        <div class="col-md-3">
+          <label for="statusFilter" class="form-label">Status</label>
+          <select 
+            id="statusFilter"
+            class="form-select"
+            [(ngModel)]="statusFilter"
+            (change)="onStatusFilterChange()">
+            <option value="">Todos os status</option>
+            <option value="PENDENTE">Pendente</option>
+            <option value="CONFIRMADO">Confirmado</option>
+            <option value="ENTREGUE">Entregue</option>
+            <option value="CANCELADO">Cancelado</option>
+          </select>
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+          <button class="btn btn-outline-secondary w-100" (click)="loadPedidos()">
+            <i class="fas fa-sync-alt me-2"></i>Atualizar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Carregando...</span>
+    </div>
+    <p class="mt-2">Carregando pedidos...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error" class="alert alert-danger" role="alert">
+    <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+  </div>
+
+  <!-- Lista de Pedidos -->
+  <div *ngIf="!isLoading && !error">
+    <div *ngIf="pedidosFiltrados.length === 0" class="text-center py-5">
+      <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+      <h5 class="text-muted">Nenhum pedido encontrado</h5>
+      <p class="text-muted">
+        <span *ngIf="searchTerm || statusFilter">Tente ajustar os filtros ou</span>
+        <a routerLink="/pedidos/novo" class="text-decoration-none">criar um novo pedido</a>
+      </p>
+    </div>
+
+    <div class="row" *ngIf="pedidosFiltrados.length > 0">
+      <div class="col-lg-4 mb-4" *ngFor="let pedido of pedidosFiltrados">
+        <div class="card h-100 shadow-sm">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="card-title mb-0">
+              <i class="fas fa-hashtag me-1"></i>Pedido {{ pedido.id }}
+            </h6>
+            <span [class]="getStatusClass(pedido.status)">
+              <i [class]="getStatusIcon(pedido.status)" class="me-1"></i>
+              {{ pedido.status }}
+            </span>
+          </div>
+          
+          <div class="card-body">
+            <div class="mb-3">
+              <strong>Data:</strong> 
+              <span class="text-muted">{{ pedido.dataPedido | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            
+            <div class="mb-3" *ngIf="pedido.observacoes">
+              <strong>Observações:</strong>
+              <p class="text-muted small mb-0">{{ pedido.observacoes }}</p>
+            </div>
+
+            <div class="row text-center mb-3">
+              <div class="col-6">
+                <div class="border-end">
+                  <h6 class="text-primary mb-0">{{ getQuantidadeTotal(pedido) }}</h6>
+                  <small class="text-muted">Itens</small>
+                </div>
+              </div>
+              <div class="col-6">
+                <h6 class="text-success mb-0">{{ formatCurrency(getTotalPedido(pedido)) }}</h6>
+                <small class="text-muted">Total</small>
+              </div>
+            </div>
+
+            <!-- Preview dos itens -->
+            <div *ngIf="pedido.itens && pedido.itens.length > 0" class="mb-3">
+              <small class="text-muted d-block mb-2">Itens do pedido:</small>
+              <div class="item-preview" *ngFor="let item of pedido.itens.slice(0, 2)">
+                <div class="d-flex justify-content-between align-items-center small">
+                  <span class="text-truncate me-2">{{ item.livro?.titulo || 'Livro não informado' }}</span>
+                  <span class="text-muted">{{ item.quantidade }}x</span>
+                </div>
+              </div>
+              <small *ngIf="pedido.itens.length > 2" class="text-muted">
+                +{{ pedido.itens.length - 2 }} item(s) adicional(is)
+              </small>
+            </div>
+          </div>
+
+          <div class="card-footer bg-transparent">
+            <div class="d-flex gap-2">
+              <button 
+                class="btn btn-outline-primary btn-sm flex-fill"
+                (click)="viewDetails(pedido)">
+                <i class="fas fa-eye me-1"></i>Detalhes
+              </button>
+              <a 
+                [routerLink]="['/pedidos/editar', pedido.id]" 
+                class="btn btn-outline-secondary btn-sm flex-fill">
+                <i class="fas fa-edit me-1"></i>Editar
+              </a>
+              <button 
+                class="btn btn-outline-danger btn-sm"
+                (click)="deletePedido(pedido.id)">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Detalhes do Pedido -->
+<div class="modal fade" [class.show]="selectedPedido" [style.display]="selectedPedido ? 'block' : 'none'" 
+     tabindex="-1" role="dialog" *ngIf="selectedPedido">
+  <div class="modal-backdrop fade show" (click)="closeDetails()"></div>
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-shopping-cart me-2"></i>Detalhes do Pedido #{{ selectedPedido.id }}
+        </h5>
+        <button type="button" class="btn-close" (click)="closeDetails()"></button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <h6>Informações Gerais</h6>
+            <table class="table table-sm">
+              <tr>
+                <td><strong>Status:</strong></td>
+                <td>
+                  <span [class]="getStatusClass(selectedPedido.status)">
+                    <i [class]="getStatusIcon(selectedPedido.status)" class="me-1"></i>
+                    {{ selectedPedido.status }}
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Data:</strong></td>
+                <td>{{ selectedPedido.dataPedido | date:'dd/MM/yyyy HH:mm' }}</td>
+              </tr>
+              <tr *ngIf="selectedPedido.observacoes">
+                <td><strong>Observações:</strong></td>
+                <td>{{ selectedPedido.observacoes }}</td>
+              </tr>
+            </table>
+          </div>
+          
+          <div class="col-md-6">
+            <h6>Resumo Financeiro</h6>
+            <div class="card bg-light">
+              <div class="card-body text-center">
+                <h4 class="text-success mb-1">{{ formatCurrency(getTotalPedido(selectedPedido)) }}</h4>
+                <small class="text-muted">Valor Total do Pedido</small>
+                <hr class="my-2">
+                <div class="row">
+                  <div class="col-6">
+                    <strong class="text-primary">{{ getQuantidadeTotal(selectedPedido) }}</strong>
+                    <br><small class="text-muted">Total de Itens</small>
+                  </div>
+                  <div class="col-6">
+                    <strong class="text-info">{{ selectedPedido.itens?.length || 0 }}</strong>
+                    <br><small class="text-muted">Tipos de Livros</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h6>Itens do Pedido</h6>
+        <div *ngIf="!selectedPedido.itens || selectedPedido.itens.length === 0" class="alert alert-info">
+          <i class="fas fa-info-circle me-2"></i>Nenhum item cadastrado neste pedido.
+        </div>
+
+        <div *ngIf="selectedPedido.itens && selectedPedido.itens.length > 0" class="table-responsive">
+          <table class="table table-striped">
+            <thead class="table-dark">
+              <tr>
+                <th>Livro</th>
+                <th class="text-center">Quantidade</th>
+                <th class="text-end">Preço Unit.</th>
+                <th class="text-end">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of selectedPedido.itens; let i = index">
+                <td>
+                  <div>
+                    <strong>{{ item.livro?.titulo || 'Livro não informado' }}</strong>
+                    <br>
+                    <small class="text-muted">
+                      <span *ngIf="item.livro?.autor">{{ item.livro.autor.nome }} • </span>
+                      <span *ngIf="item.livro?.editora">{{ item.livro.editora.nome }}</span>
+                    </small>
+                  </div>
+                </td>
+                <td class="text-center">
+                  <span class="badge bg-primary">{{ item.quantidade }}</span>
+                </td>
+                <td class="text-end">{{ formatCurrency(item.precoUnitario) }}</td>
+                <td class="text-end">
+                  <strong>{{ formatCurrency(item.quantidade * item.precoUnitario) }}</strong>
+                </td>
+              </tr>
+            </tbody>
+            <tfoot class="table-secondary">
+              <tr>
+                <th colspan="3" class="text-end">Total do Pedido:</th>
+                <th class="text-end text-success">
+                  <h5>{{ formatCurrency(getTotalPedido(selectedPedido)) }}</h5>
+                </th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <a [routerLink]="['/pedidos/editar', selectedPedido.id]" 
+           class="btn btn-primary" 
+           (click)="closeDetails()">
+          <i class="fas fa-edit me-2"></i>Editar Pedido
+        </a>
+        <button type="button" class="btn btn-secondary" (click)="closeDetails()">
+          Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,313 @@
+/* Estilos globais da aplicação */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  line-height: 1.6;
+  color: #334155;
+  background-color: #f8f9fa;
+}
+
+/* Navbar personalizado */
+.navbar-brand {
+  font-weight: 600;
+  font-size: 1.4rem;
+}
+
+.navbar {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Cards */
+.card {
+  border: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Botões */
+.btn {
+  border-radius: 0.5rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  border: none;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+  transform: translateY(-1px);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+  border: none;
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+  border: none;
+  color: #FFFFFF !important;
+}
+
+.btn-info {
+  background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+  border: none;
+  color: #FFFFFF !important;
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #6c757d 0%, #545b62 100%);
+  border: none;
+  color: #FFFFFF !important;
+}
+
+.btn-primary, .btn-success, .btn-danger {
+  color: #FFFFFF !important;
+}
+
+/* Forms */
+.form-control, .form-select {
+  border-radius: 0.5rem;
+  border: 2px solid #D1D5DB !important;
+  padding: 0.75rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  background: #FFFFFF !important;
+  color: #1F2937 !important;
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.form-control::placeholder {
+  color: #9CA3AF !important;
+  opacity: 1;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #3B82F6 !important;
+  box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.15) !important;
+  background: #FFFFFF !important;
+  outline: none;
+  color: #1F2937 !important;
+}
+
+.form-control:disabled, .form-select:disabled {
+  background: #F3F4F6 !important;
+  color: #6B7280 !important;
+  border-color: #E5E7EB !important;
+  opacity: 0.7;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #1F2937 !important;
+  margin-bottom: 0.5rem;
+}
+
+/* Tables */
+.table {
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #FFFFFF !important;
+  border: 2px solid #E5E7EB !important;
+}
+
+.table th {
+  background: linear-gradient(135deg, #3B82F6 0%, #06B6D4 100%) !important;
+  border-bottom: none !important;
+  border: none !important;
+  font-weight: 700;
+  color: #FFFFFF !important;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+  padding: 1rem 1.2rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.table tbody tr {
+  background: #FFFFFF !important;
+  border-bottom: 1px solid #E5E7EB !important;
+}
+
+.table tbody tr:nth-child(even) {
+  background: #FFFFFF !important;
+}
+
+.table tbody tr:hover {
+  background: #F0F9FF !important;
+}
+
+.table tbody td {
+  color: #1F2937 !important;
+  font-weight: 500;
+  border-color: #E5E7EB !important;
+  padding: 1rem 1.2rem;
+  background-color: inherit !important;
+}
+
+/* Badges */
+.badge {
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 0.75rem;
+  padding: 0.5rem 0.75rem;
+}
+
+/* Loading */
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Utilities */
+.shadow-sm {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+
+.shadow {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.text-muted {
+  color: #6c757d !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container-fluid {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  
+  .card {
+    margin-bottom: 1rem;
+  }
+  
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+  
+  .btn-sm {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bs-body-bg: #121212;
+    --bs-body-color: #ffffff;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Modal customizations */
+.modal-content {
+  border-radius: 0.75rem;
+  border: none;
+}
+
+.modal-header {
+  border-bottom: 1px solid #dee2e6;
+  padding: 1.5rem;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  border-top: 1px solid #dee2e6;
+  padding: 1.5rem;
+}
+
+/* Toast notifications */
+.toast {
+  border-radius: 0.5rem;
+  border: none;
+}
+
+/* Custom color palette */
+:root {
+  --primary-color: #007bff;
+  --secondary-color: #6c757d;
+  --success-color: #28a745;
+  --warning-color: #ffc107;
+  --danger-color: #dc3545;
+  --info-color: #17a2b8;
+  --light-color: #f8f9fa;
+  --dark-color: #343a40;
+}
+
+/* Hover effects */
+.hover-effect {
+  transition: all 0.3s ease;
+}
+
+.hover-effect:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Fix modal z-index issues */
+.modal {
+  z-index: 10550 !important;
+}
+
+.modal-backdrop {
+  z-index: 10500 !important;
+}
+
+.modal-dialog {
+  z-index: 10560 !important;
+}

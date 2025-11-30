@@ -1,0 +1,760 @@
+/* Tema Soft com Cores Frias - Sistema de Gestão de Livros */
+
+:root {
+    /* Cores Frias e Suaves com melhor contraste */
+    --primary-blue: #1E40AF;
+    --primary-teal: #0E7490;
+    --secondary-slate: #334155;
+    --accent-mint: #059669;
+    --accent-lavender: #7C3AED;
+    
+    /* Gradientes Suaves */
+    --gradient-main: linear-gradient(135deg, #1E40AF 0%, #0E7490 100%);
+    --gradient-soft: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+    --gradient-card: linear-gradient(145deg, #ffffff 0%, #F8FAFC 100%);
+    
+    /* Tons Neutros */
+    --bg-light: #F1F5F9;
+    --bg-white: #FFFFFF;
+    --text-primary: #334155;
+    --text-secondary: #475569;
+    --text-muted: #64748B;
+
+    /* Bootstrap Overrides */
+    --bs-body-color: #334155;
+    --bs-heading-color: #334155;
+    --bs-dark: #334155;
+    --bs-dark-rgb: 51, 65, 85;
+    
+    /* Cores de Status */
+    --success-soft: #059669;
+    --warning-soft: #D97706;
+    --danger-soft: #DC2626;
+    --info-soft: #1E40AF;
+    
+    /* Sombras Suaves */
+    --shadow-sm: 0 2px 8px rgba(107, 124, 147, 0.08);
+    --shadow-md: 0 4px 16px rgba(107, 124, 147, 0.12);
+    --shadow-lg: 0 8px 32px rgba(107, 124, 147, 0.16);
+    --shadow-hover: 0 12px 40px rgba(107, 124, 147, 0.20);
+}
+
+/* Reset e Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    background: var(--gradient-soft);
+    color: var(--text-primary);
+    line-height: 1.7;
+    overflow-x: hidden;
+}
+
+/* Navbar Estilizada */
+.navbar {
+    background: var(--bg-white) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 1rem 2rem;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    position: relative !important;
+    z-index: 10000 !important;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--primary-blue) !important;
+    letter-spacing: -0.5px;
+}
+
+.navbar-nav .nav-link {
+    color: var(--text-primary) !important;
+    font-weight: 700;
+    padding: 0.8rem 1.6rem !important;
+    margin: 0 0.3rem;
+    border-radius: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(30, 64, 175, 0.1);
+    border: 2px solid transparent;
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link.active {
+    background: var(--gradient-main) !important;
+    color: white !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(30, 64, 175, 0.4);
+    border-color: var(--primary-blue);
+}
+
+.navbar-nav .nav-link i {
+    margin-right: 0.5rem;
+    font-size: 1.1rem;
+}
+
+/* Botões Modernos */
+.btn {
+    border-radius: 10px;
+    font-weight: 700;
+    padding: 0.8rem 1.8rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.9rem;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn-primary {
+    background: var(--gradient-main);
+    color: white;
+    font-weight: 700;
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(30, 64, 175, 0.5);
+    background: linear-gradient(135deg, #1E3A8A 0%, #0C4A6E 100%);
+}
+
+.btn-success {
+    background: var(--success-soft);
+    color: white;
+    font-weight: 700;
+}
+
+.btn-success:hover {
+    background: #047857;
+    box-shadow: 0 10px 25px rgba(5, 150, 105, 0.4);
+}
+
+.btn-danger {
+    background: var(--danger-soft);
+    color: white;
+    font-weight: 700;
+}
+
+.btn-danger:hover {
+    background: #B91C1C;
+    box-shadow: 0 10px 25px rgba(220, 38, 38, 0.4);
+}
+
+.btn-warning {
+    background: var(--warning-soft);
+    color: white;
+    font-weight: 700;
+}
+
+.btn-warning:hover {
+    background: #B45309;
+    box-shadow: 0 10px 25px rgba(217, 119, 6, 0.4);
+}
+
+.btn-info {
+    background: var(--info-soft);
+    color: white;
+    font-weight: 700;
+}
+
+.btn-info:hover {
+    background: #1E3A8A;
+    box-shadow: 0 10px 25px rgba(30, 64, 175, 0.4);
+}
+
+.btn-sm {
+    padding: 0.4rem 1rem;
+    font-size: 0.875rem;
+}
+
+/* Cards Suaves */
+.card {
+    background: var(--gradient-card);
+    border: none;
+    border-radius: 20px;
+    box-shadow: var(--shadow-md);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-hover);
+}
+
+.card-header {
+    background: var(--gradient-main);
+    color: white;
+    border: none;
+    padding: 1.5rem;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.card-header .form-control,
+.card-header .input-group .form-control {
+    background: #FFFFFF !important;
+    border: 2px solid #FFFFFF !important;
+    color: #1F2937 !important;
+    font-weight: 500;
+}
+
+.card-header .form-control::placeholder {
+    color: #9CA3AF !important;
+}
+
+.card-header .form-control:focus {
+    background: #FFFFFF !important;
+    border-color: #DBEAFE !important;
+    box-shadow: 0 0 0 4px rgba(219, 234, 254, 0.5) !important;
+}
+
+.card-header .btn-outline-secondary {
+    background: #FFFFFF !important;
+    border-color: #FFFFFF !important;
+    color: #3B82F6 !important;
+}
+
+.card-header .btn-outline-secondary:hover {
+    background: #DBEAFE !important;
+    border-color: #DBEAFE !important;
+    color: #1E40AF !important;
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+/* Tabelas Elegantes */
+.table {
+    background: #FFFFFF !important;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid #CBD5E1 !important;
+}
+
+.table thead th {
+    background: #1E293B !important; /* Dark Slate Blue for better contrast */
+    color: #F8FAFC !important; /* Off-white text */
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+    border: none !important;
+    padding: 1.2rem;
+}
+
+.table tbody tr {
+    transition: all 0.3s ease;
+    border-bottom: 1px solid #CBD5E1 !important;
+    background: #FFFFFF !important;
+}
+
+.table tbody tr:nth-child(even) {
+    background: #F1F5F9 !important; /* Zebra striping for better readability */
+}
+
+.table tbody tr:hover {
+    background: #E2E8F0 !important; /* Slightly darker hover */
+    transform: scale(1.001);
+}
+
+.table tbody td {
+    padding: 1.2rem;
+    vertical-align: middle;
+    color: #334155 !important; /* Softer dark gray */
+    font-weight: 500;
+    border-color: #CBD5E1 !important;
+    background-color: inherit !important;
+}
+
+/* Badges Suaves */
+.badge {
+    padding: 0.6rem 1.2rem;
+    border-radius: 20px;
+    font-weight: 800;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    background: #1E40AF !important;
+    color: white !important;
+}
+
+.badge.bg-success {
+    background: var(--success-soft) !important;
+    color: white !important;
+}
+
+.badge.bg-warning {
+    background: var(--warning-soft) !important;
+    color: white !important;
+}
+
+.badge.bg-danger {
+    background: var(--danger-soft) !important;
+    color: white !important;
+}
+
+.badge.bg-info {
+    background: var(--info-soft) !important;
+    color: white !important;
+}
+
+/* Formulários Modernos */
+.form-control,
+.form-select {
+    border: 2px solid #D1D5DB !important;
+    border-radius: 10px;
+    padding: 0.9rem 1.3rem;
+    transition: all 0.3s ease;
+    background: #FFFFFF !important;
+    color: #1F2937 !important;
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+.form-control::placeholder {
+    color: #9CA3AF !important;
+    opacity: 1;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #3B82F6 !important;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15) !important;
+    background: #FFFFFF !important;
+    outline: none;
+    color: #1F2937 !important;
+}
+
+.form-control:disabled,
+.form-select:disabled {
+    background: #F3F4F6 !important;
+    color: #6B7280 !important;
+    border-color: #E5E7EB !important;
+    opacity: 0.7;
+}
+
+.form-label {
+    font-weight: 700;
+    color: #1F2937 !important;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.3px;
+}
+
+/* Textarea específico */
+textarea.form-control {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* Input types específicos */
+input[type="text"].form-control,
+input[type="email"].form-control,
+input[type="password"].form-control,
+input[type="number"].form-control,
+input[type="tel"].form-control,
+input[type="url"].form-control,
+input[type="date"].form-control,
+input[type="time"].form-control,
+input[type="datetime-local"].form-control {
+    background: #FFFFFF !important;
+    color: #1F2937 !important;
+}
+
+/* Checkbox e Radio */
+.form-check-input {
+    border: 2px solid #D1D5DB;
+    background-color: #FFFFFF;
+}
+
+.form-check-input:checked {
+    background-color: #3B82F6;
+    border-color: #3B82F6;
+}
+
+.form-check-input:focus {
+    border-color: #3B82F6;
+    box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.15);
+}
+
+.form-check-label {
+    color: #1F2937 !important;
+    font-weight: 500;
+}
+
+/* Modal Suave */
+.modal-content {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.modal-header {
+    background: var(--gradient-main);
+    color: white;
+    border: none;
+    padding: 1.5rem 2rem;
+}
+
+.modal-body {
+    padding: 2rem;
+    background: var(--bg-white);
+}
+
+.modal-footer {
+    border: none;
+    padding: 1.5rem 2rem;
+    background: var(--bg-light);
+}
+
+.btn-close {
+    filter: brightness(0) invert(1);
+}
+
+/* Alerts Suaves */
+.alert {
+    border: none;
+    border-radius: 12px;
+    padding: 1.2rem 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    font-weight: 600;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+    color: #065F46;
+    border-left: 4px solid var(--success-soft);
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
+    color: #991B1B;
+    border-left: 4px solid var(--danger-soft);
+}
+
+.alert-warning {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05));
+    color: #92400E;
+    border-left: 4px solid var(--warning-soft);
+}
+
+.alert-info {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05));
+    color: #1E3A8A;
+    border-left: 4px solid var(--info-soft);
+}
+
+/* Container Principal */
+.container,
+.container-fluid {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+/* Animações Suaves */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.6s ease-out;
+}
+
+.slide-in {
+    animation: slideIn 0.5s ease-out;
+}
+
+/* Input Groups */
+.input-group .form-control {
+    border-right: none;
+}
+
+.input-group .btn {
+    border-left: none;
+    border-color: rgba(107, 124, 147, 0.15);
+}
+
+/* Scrollbar Personalizada */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-light);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--primary-blue), var(--primary-teal));
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-teal);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .navbar {
+        padding: 0.8rem 1rem;
+    }
+    
+    .navbar-nav .nav-link {
+        padding: 0.5rem 1rem !important;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .table {
+        font-size: 0.875rem;
+    }
+}
+
+/* Loading States */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+    position: relative;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 30px;
+    height: 30px;
+    margin: -15px 0 0 -15px;
+    border: 3px solid var(--primary-blue);
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spinner 0.8s linear infinite;
+}
+
+@keyframes spinner {
+    to { transform: rotate(360deg); }
+}
+
+/* Melhorias para Print */
+@media print {
+    body {
+        background: white;
+    }
+    
+    .navbar,
+    .btn,
+    .modal {
+        display: none !important;
+    }
+    
+    .card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+}
+
+/* Estilos para Dashboard - Cards de Estatísticas */
+.card h3, .card h4, .card h5 {
+    color: var(--text-primary) !important;
+    font-weight: 800 !important;
+}
+
+.card p, .card small, .card .text-muted {
+    color: var(--text-primary) !important;
+    font-weight: 700 !important;
+    font-size: 1rem !important;
+}
+
+.card .card-body {
+    color: var(--text-primary) !important;
+}
+
+.card-title {
+    color: var(--text-primary) !important;
+    font-weight: 800 !important;
+}
+
+.card-text {
+    color: var(--text-primary) !important;
+    font-weight: 700 !important;
+}
+
+/* Estilo específico para os ícones grandes nos cards */
+.card .fa-3x, .card .fa-2x {
+    color: var(--primary-blue) !important;
+    opacity: 1 !important;
+}
+
+/* Melhorar contraste de todos os textos dentro de cards */
+.card * {
+    color: var(--text-primary) !important;
+}
+
+.card .badge {
+    color: white !important;
+}
+
+/* ==========================
+   DROPDOWN HOVER STYLES
+   ========================== */
+
+/* Esconde dropdown por padrão */
+.navbar .dropdown-menu {
+    display: none !important;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+    margin-top: 0 !important;
+}
+
+/* Mostra dropdown no hover */
+.navbar .nav-item.dropdown:hover > .dropdown-menu {
+    display: block !important;
+    opacity: 1;
+}
+
+/* Estilo do dropdown */
+.navbar .dropdown-menu {
+    min-width: 220px;
+    max-height: 500px;
+    overflow-y: auto;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+    padding: 0.5rem;
+    background-color: #ffffff;
+    z-index: 9999 !important; /* Garante que fique sobre outros elementos */
+    position: absolute !important;
+}
+
+/* Cabeçalho do dropdown */
+.navbar .dropdown-header {
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    color: #64748B;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Itens do dropdown */
+.navbar .dropdown-item {
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    color: #334155 !important;
+    margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+}
+
+/* Ícones dentro do dropdown (Itens, Headers e Textos) */
+.navbar .dropdown-item i,
+.navbar .dropdown-item svg,
+.navbar .dropdown-header i,
+.navbar .dropdown-header svg,
+.navbar .dropdown-item-text i,
+.navbar .dropdown-item-text svg {
+    margin-right: 12px;
+    width: 20px;
+    text-align: center;
+    display: inline-block;
+    color: var(--primary-blue);
+}
+
+.navbar .dropdown-item:hover,
+.navbar .dropdown-item:focus {
+    background-color: #F1F5F9 !important;
+    color: #0F172A !important;
+    transform: translateX(4px);
+}
+
+.navbar .preview-item {
+    padding: 0.75rem 1rem !important;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.navbar .preview-item:hover {
+    background: #F8FAFC !important;
+    color: #1E293B !important;
+    transform: translateX(5px);
+}
+
+/* Espaçamento para o texto secundário (ex: nacionalidade, cidade) */
+.navbar .preview-item small {
+    margin-left: 15px;
+    font-weight: 500;
+}
+
+.navbar .dropdown-item.text-success:hover {
+    background: #10B981 !important;
+    color: white !important;
+}
+
+/* Scrollbar customizada */
+.navbar .dropdown-menu::-webkit-scrollbar {
+    width: 8px;
+}
+
+.navbar .dropdown-menu::-webkit-scrollbar-track {
+    background: #F3F4F6;
+    border-radius: 4px;
+}
+
+.navbar .dropdown-menu::-webkit-scrollbar-thumb {
+    background: #9CA3AF;
+    border-radius: 4px;
+}
+
+.navbar .dropdown-menu::-webkit-scrollbar-thumb:hover {
+    background: #6B7280;
+}
