@@ -45,12 +45,13 @@ import { Livro } from '../../../models/livro.model';
                   <th>Ano</th>
                   <th>Preço</th>
                   <th>Estoque</th>
+                  <th>Status</th>
                   <th>Ações</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngIf="livros.length === 0">
-                  <td colspan="9" class="text-center">Nenhum livro encontrado</td>
+                  <td colspan="10" class="text-center">Nenhum livro encontrado</td>
                 </tr>
                 <tr *ngFor="let livro of livros">
                   <td>{{ livro.id }}</td>
@@ -61,6 +62,11 @@ import { Livro } from '../../../models/livro.model';
                   <td>{{ livro.anoPublicacao || '-' }}</td>
                   <td>{{ livro.preco | currency:'BRL' }}</td>
                   <td>{{ livro.quantidadeEstoque }}</td>
+                  <td>
+                    <span class="badge" [class]="livro.disponivel ? 'bg-success' : 'bg-danger'">
+                      {{ livro.disponivel ? 'Disponível' : 'Indisponível' }}
+                    </span>
+                  </td>
                   <td>
                     <button class="btn btn-sm btn-warning me-1" (click)="editar(livro.id!)" title="Editar">
                       <i class="fas fa-edit"></i>

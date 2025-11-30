@@ -16,7 +16,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.br.model.Autor;
+import com.br.model.Editora;
 import com.br.model.Livro;
+import com.br.repository.AutorRepository;
+import com.br.repository.EditoraRepository;
 import com.br.repository.LivroRepository;
 
 import jakarta.validation.Valid;
@@ -28,6 +32,12 @@ public class LivroController {
 
     @Autowired
     private LivroRepository livroRepository;
+
+    @Autowired
+    private AutorRepository autorRepository;
+
+    @Autowired
+    private EditoraRepository editoraRepository;
 
     @GetMapping
     public ResponseEntity<List<Livro>> listar() {
@@ -76,7 +86,7 @@ public class LivroController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> alterar(@PathVariable Long id, @Valid @RequestBody Livro livro) {
-        return livroRepository.findById(id)
+        return livroRepository.findByIdWithRelationships(id)
             .map(livroExistente -> {
                 try {
                     livroExistente.setTitulo(livro.getTitulo());
@@ -89,13 +99,32 @@ public class LivroController {
                     livroExistente.setQuantidadeEstoque(livro.getQuantidadeEstoque());
                     livroExistente.setDisponivel(livro.isDisponivel());
                     livroExistente.setSinopse(livro.getSinopse());
-                    livroExistente.setDataCadastro(livro.getDataCadastro());
-                    livroExistente.setAutor(livro.getAutor());
-                    livroExistente.setEditora(livro.getEditora());
-                    livroExistente.setCategorias(livro.getCategorias());
-                    Livro salva = livroRepository.save(livroExistente);
-                    return ResponseEntity.ok(salva);
+                    
+                    // Atualiza Autor buscando do banco para evitar objeto parcial
+                    if (livro.getAutor() != null && livro.getAutor().getId() != null) {
+                        Autor autor = autorRepository.findById(livro.getAutor().getId()).orElse(null);
+                        livroExistente.setAutor(autor);
+                    } else {
+                        livroExistente.setAutor(null);
+                    }
+
+                    // Atualiza Editora buscando do banco
+                    if (livro.getEditora() != null && livro.getEditora().getId() != null) {
+                        Editora editora = editoraRepository.findById(livro.getEditora().getId()).orElse(null);
+                        livroExistente.setEditora(editora);
+                    } else {
+                        livroExistente.setEditora(null);
+                    }
+
+                    // Só atualiza categorias se for passado algo (evita limpar se vier null)
+                    if (livro.getCategorias() != null) {
+                        livroExistente.setCategorias(livro.getCategorias());
+                    }
+                    
+                    livroRepository.save(livroExistente);
+                    return ResponseEntity.ok().build();
                 } catch (Exception e) {
+                    e.printStackTrace();
                     return ResponseEntity.status(500).body(Collections.singletonMap("error", "Erro ao alterar livro: " + e.getMessage()));
                 }
             })

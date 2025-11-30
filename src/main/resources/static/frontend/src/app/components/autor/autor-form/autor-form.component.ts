@@ -43,7 +43,7 @@ import { Autor } from '../../../models/autor.model';
               
               <div class="col-md-6">
                 <div class="mb-3">
-                  <label for="sobrenome" class="form-label">Sobrenome *</label>
+                  <label for="sobrenome" class="form-label">Sobrenome</label>
                   <input 
                     type="text" 
                     class="form-control"
@@ -51,9 +51,6 @@ import { Autor } from '../../../models/autor.model';
                     formControlName="sobrenome"
                     [class.is-invalid]="autorForm.get('sobrenome')?.invalid && autorForm.get('sobrenome')?.touched"
                   >
-                  <div class="invalid-feedback" *ngIf="autorForm.get('sobrenome')?.invalid && autorForm.get('sobrenome')?.touched">
-                    Sobrenome é obrigatório
-                  </div>
                 </div>
               </div>
             </div>
@@ -120,7 +117,7 @@ import { Autor } from '../../../models/autor.model';
                 <i class="fas fa-save"></i> 
                 {{ isEditing ? 'Atualizar' : 'Salvar' }}
               </button>
-              
+
               <button 
                 type="button" 
                 class="btn btn-secondary"
@@ -175,7 +172,7 @@ export class AutorFormComponent implements OnInit {
   createForm(): FormGroup {
     return this.fb.group({
       nome: ['', [Validators.required, Validators.minLength(2)]],
-      sobrenome: ['', [Validators.required, Validators.minLength(2)]],
+      sobrenome: ['', [Validators.minLength(2)]],
       dataNascimento: [''],
       nacionalidade: [''],
       biografia: [''],
@@ -210,6 +207,10 @@ export class AutorFormComponent implements OnInit {
       this.salvando = true;
       const autorData = this.autorForm.value;
 
+      if (this.isEditing && this.autorId) {
+        autorData.id = this.autorId;
+      }
+
       const operation = this.isEditing 
         ? this.autorService.atualizar(this.autorId!, autorData)
         : this.autorService.criar(autorData);
@@ -230,6 +231,13 @@ export class AutorFormComponent implements OnInit {
       });
     } else {
       this.markFormGroupTouched();
+    }
+  }
+
+  inativar(): void {
+    if (confirm('Tem certeza que deseja inativar este autor?')) {
+      this.autorForm.patchValue({ ativo: false });
+      this.onSubmit();
     }
   }
 

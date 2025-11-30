@@ -17,10 +17,10 @@ if exist target rmdir /s /q target
 
 echo.
 echo [3/4] Compilando projeto...
-mvnw.cmd clean compile -DskipTests
+call mvnw.cmd clean compile -DskipTests
 
 echo.
 echo [4/4] Iniciando Spring Boot...
-mvnw.cmd spring-boot:run
+call mvnw.cmd spring-boot:run
 
 pause

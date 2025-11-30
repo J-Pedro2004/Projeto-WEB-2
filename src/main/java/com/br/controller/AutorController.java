@@ -13,13 +13,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.br.model.Autor;
 import com.br.repository.AutorRepository;
+
+import jakarta.validation.Valid;
 
 /**
  * Controller responsável pelo CRUD da entidade Autor.
@@ -100,8 +101,8 @@ public class AutorController {
             autorExistente.setNacionalidade(autor.getNacionalidade());
             autorExistente.setBiografia(autor.getBiografia());
             autorExistente.setAtivo(autor.isAtivo());
-            Autor salvo = autorRepository.save(autorExistente);
-            return ResponseEntity.ok(salvo);
+            autorRepository.save(autorExistente);
+            return ResponseEntity.ok().build();
         } else {
             return ResponseEntity.status(404).body(Collections.singletonMap("error", "Autor não encontrado para alteração."));
         }
