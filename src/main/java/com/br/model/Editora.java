@@ -16,7 +16,7 @@ import jakarta.persistence.TemporalType;
 
 /**
  * Entidade Editora - representa as editoras dos livros
- * Relacionamento 1:1 com Livro (cada livro tem uma editora específica)
+ * Relacionamento 1:N com Livro (uma editora pode ter vários livros)
  */
 @Entity
 @Table(name = "editoras")

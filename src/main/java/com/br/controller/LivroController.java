@@ -3,6 +3,8 @@ package com.br.controller;
 import java.util.Collections;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -16,12 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.br.model.Autor;
-import com.br.model.Editora;
 import com.br.model.Livro;
-import com.br.repository.AutorRepository;
-import com.br.repository.EditoraRepository;
-import com.br.repository.LivroRepository;
+import com.br.service.LivroService;
 
 import jakarta.validation.Valid;
 
@@ -30,119 +28,75 @@ import jakarta.validation.Valid;
 @CrossOrigin(origins="*")
 public class LivroController {
 
-    @Autowired
-    private LivroRepository livroRepository;
+    private static final Logger logger = LoggerFactory.getLogger(LivroController.class);
 
     @Autowired
-    private AutorRepository autorRepository;
-
-    @Autowired
-    private EditoraRepository editoraRepository;
+    private LivroService livroService;
 
     @GetMapping
     public ResponseEntity<List<Livro>> listar() {
-        // Usa consulta com fetch dos relacionamentos para evitar LazyInitializationException
-        List<Livro> livros = livroRepository.findAllWithRelationships();
-        return ResponseEntity.ok(livros);
+        return ResponseEntity.ok(livroService.listar());
     }
 
     @GetMapping("/disponiveis")
     public ResponseEntity<List<Livro>> listarDisponiveis() {
-        List<Livro> livros = livroRepository.findByDisponivelTrue();
-        return ResponseEntity.ok(livros);
+        return ResponseEntity.ok(livroService.listarDisponiveis());
     }
 
     @GetMapping("/buscar")
     public ResponseEntity<List<Livro>> buscarPorTitulo(@RequestParam String titulo) {
-        List<Livro> livros = livroRepository.findByTituloContaining(titulo);
-        return ResponseEntity.ok(livros);
+        return ResponseEntity.ok(livroService.buscarPorTitulo(titulo));
     }
 
     @GetMapping("/autor/{autorId}")
     public ResponseEntity<List<Livro>> buscarPorAutor(@PathVariable Long autorId) {
-        List<Livro> livros = livroRepository.findByAutorId(autorId);
-        return ResponseEntity.ok(livros);
+        return ResponseEntity.ok(livroService.buscarPorAutor(autorId));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> consultar(@PathVariable Long id) {
-        var opt = livroRepository.findByIdWithRelationships(id);
-        if (opt.isPresent()) {
-            return ResponseEntity.ok(opt.get());
-        } else {
-            return ResponseEntity.status(404).body(Collections.singletonMap("error", "Livro não encontrado."));
+        var livro = livroService.consultar(id);
+        if (livro.isPresent()) {
+            return ResponseEntity.ok(livro.get());
         }
+        return ResponseEntity.status(404).body(Collections.singletonMap("error", "Livro não encontrado."));
     }
 
     @PostMapping
     public ResponseEntity<?> incluir(@Valid @RequestBody Livro livro) {
         try {
-            Livro salvo = livroRepository.save(livro);
+            Livro salvo = livroService.incluir(livro);
             return ResponseEntity.status(201).body(salvo);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Collections.singletonMap("error", e.getMessage()));
+            logger.error("Erro ao criar livro", e);
+            return ResponseEntity.status(500).body(Collections.singletonMap("error", "Erro ao criar livro: " + e.getMessage()));
         }
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<?> alterar(@PathVariable Long id, @Valid @RequestBody Livro livro) {
-        return livroRepository.findByIdWithRelationships(id)
-            .map(livroExistente -> {
-                try {
-                    livroExistente.setTitulo(livro.getTitulo());
-                    livroExistente.setSubtitulo(livro.getSubtitulo());
-                    livroExistente.setIsbn(livro.getIsbn());
-                    livroExistente.setAnoPublicacao(livro.getAnoPublicacao());
-                    livroExistente.setNumeroPaginas(livro.getNumeroPaginas());
-                    livroExistente.setIdioma(livro.getIdioma());
-                    livroExistente.setPreco(livro.getPreco());
-                    livroExistente.setQuantidadeEstoque(livro.getQuantidadeEstoque());
-                    livroExistente.setDisponivel(livro.isDisponivel());
-                    
-                    // Regra de Negócio: Se estoque for zero ou negativo, o livro fica indisponível automaticamente
-                    if (livroExistente.getQuantidadeEstoque() <= 0) {
-                        livroExistente.setDisponivel(false);
-                    }
-                    livroExistente.setSinopse(livro.getSinopse());
-                    
-                    // Atualiza Autor buscando do banco para evitar objeto parcial
-                    if (livro.getAutor() != null && livro.getAutor().getId() != null) {
-                        Autor autor = autorRepository.findById(livro.getAutor().getId()).orElse(null);
-                        livroExistente.setAutor(autor);
-                    } else {
-                        livroExistente.setAutor(null);
-                    }
-
-                    // Atualiza Editora buscando do banco
-                    if (livro.getEditora() != null && livro.getEditora().getId() != null) {
-                        Editora editora = editoraRepository.findById(livro.getEditora().getId()).orElse(null);
-                        livroExistente.setEditora(editora);
-                    } else {
-                        livroExistente.setEditora(null);
-                    }
-
-                    // Só atualiza categorias se for passado algo (evita limpar se vier null)
-                    if (livro.getCategorias() != null) {
-                        livroExistente.setCategorias(livro.getCategorias());
-                    }
-                    
-                    livroRepository.save(livroExistente);
-                    return ResponseEntity.ok().build();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return ResponseEntity.status(500).body(Collections.singletonMap("error", "Erro ao alterar livro: " + e.getMessage()));
-                }
-            })
-        .orElseGet(() -> ResponseEntity.status(404).body(Collections.singletonMap("error", "Livro não encontrado para alteração.")));
+        try {
+            livroService.alterar(id, livro);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+             if (e.getMessage() != null && e.getMessage().contains("não encontrado")) {
+                 return ResponseEntity.status(404).body(Collections.singletonMap("error", e.getMessage()));
+             }
+             logger.error("Erro ao alterar livro", e);
+             return ResponseEntity.status(500).body(Collections.singletonMap("error", "Erro ao alterar livro: " + e.getMessage()));
+        } catch (Exception e) {
+            logger.error("Erro ao alterar livro", e);
+            return ResponseEntity.status(500).body(Collections.singletonMap("error", "Erro ao alterar livro: " + e.getMessage()));
+        }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> excluir(@PathVariable Long id) {
-        if (livroRepository.existsById(id)) {
-            livroRepository.deleteById(id);
+        try {
+            livroService.excluir(id);
             return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.status(404).body(Collections.singletonMap("error", "Livro não encontrado para exclusão."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(Collections.singletonMap("error", e.getMessage()));
         }
     }
 }

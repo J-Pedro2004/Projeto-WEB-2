@@ -35,10 +35,10 @@ public interface LivroRepository extends JpaRepository<Livro,Long>{
     @Query("SELECT l FROM Livro l WHERE l.isbn = :isbn")
     Optional<Livro> findByIsbn(@Param("isbn") String isbn);
     
-    @Query("SELECT l FROM Livro l JOIN FETCH l.autor JOIN FETCH l.editora LEFT JOIN FETCH l.categorias WHERE l.id = :id")
+    @Query("SELECT l FROM Livro l LEFT JOIN FETCH l.autor LEFT JOIN FETCH l.editora LEFT JOIN FETCH l.categorias WHERE l.id = :id")
     Optional<Livro> findByIdWithRelationships(@Param("id") Long id);
     
-    @Query("SELECT l FROM Livro l JOIN FETCH l.autor JOIN FETCH l.editora LEFT JOIN FETCH l.categorias")
+    @Query("SELECT l FROM Livro l LEFT JOIN FETCH l.autor LEFT JOIN FETCH l.editora LEFT JOIN FETCH l.categorias")
     List<Livro> findAllWithRelationships();
 
     List<Livro> findByAutorId(Long autorId);
