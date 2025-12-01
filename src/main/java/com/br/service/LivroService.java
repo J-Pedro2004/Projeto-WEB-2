@@ -140,18 +140,37 @@ public class LivroService {
 
         // Atualiza Categorias
         if (livro.getCategorias() != null) {
-            livroExistente.setCategorias(livro.getCategorias());
+            List<Long> ids = livro.getCategorias().stream()
+                .filter(c -> c.getId() != null)
+                .map(Categoria::getId)
+                .collect(Collectors.toList());
+            
+            if (!ids.isEmpty()) {
+                List<Categoria> categorias = categoriaRepository.findAllById(ids);
+                livroExistente.setCategorias(categorias);
+            } else {
+                livroExistente.setCategorias(null);
+            }
         }
         
-        return livroRepository.save(livroExistente);
+        Livro salvo = livroRepository.save(livroExistente);
+        
+        // Recarrega o livro com os relacionamentos para retornar completo
+        return livroRepository.findByIdWithRelationships(salvo.getId())
+                .orElse(salvo);
     }
 
     @Transactional
     public void excluir(Long id) {
-        if (livroRepository.existsById(id)) {
-            livroRepository.deleteById(id);
-        } else {
+        if (!livroRepository.existsById(id)) {
             throw new RuntimeException("Livro não encontrado para exclusão.");
+        }
+
+        try {
+            livroRepository.deleteById(id);
+            livroRepository.flush();
+        } catch (Exception e) {
+            throw new RuntimeException("Não é possível excluir o livro pois ele possui registros associados (empréstimos ou pedidos). Tente inativá-lo.");
         }
     }
 }

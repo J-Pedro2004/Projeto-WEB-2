@@ -76,8 +76,8 @@ public class LivroController {
     @PutMapping("/{id}")
     public ResponseEntity<?> alterar(@PathVariable Long id, @Valid @RequestBody Livro livro) {
         try {
-            livroService.alterar(id, livro);
-            return ResponseEntity.ok().build();
+            Livro salvo = livroService.alterar(id, livro);
+            return ResponseEntity.ok(salvo);
         } catch (RuntimeException e) {
              if (e.getMessage() != null && e.getMessage().contains("não encontrado")) {
                  return ResponseEntity.status(404).body(Collections.singletonMap("error", e.getMessage()));

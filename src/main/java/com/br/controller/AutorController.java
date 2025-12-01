@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.br.model.Autor;
-import com.br.repository.AutorRepository;
+import com.br.service.AutorService;
 
 import jakarta.validation.Valid;
 
@@ -32,15 +32,14 @@ import jakarta.validation.Valid;
 public class AutorController {
 
     @Autowired
-    private AutorRepository autorRepository;
+    private AutorService autorService;
 
     /**
      * Lista todos os autores cadastrados.
      */
     @GetMapping
     public ResponseEntity<List<Autor>> listar() {
-        List<Autor> autores = autorRepository.findAll();
-        return ResponseEntity.ok(autores);
+        return ResponseEntity.ok(autorService.listar());
     }
 
     /**
@@ -48,8 +47,7 @@ public class AutorController {
      */
     @GetMapping("/ativos")
     public ResponseEntity<List<Autor>> listarAtivos() {
-        List<Autor> autores = autorRepository.findByAtivoTrue();
-        return ResponseEntity.ok(autores);
+        return ResponseEntity.ok(autorService.listarAtivos());
     }
 
     /**
@@ -57,9 +55,9 @@ public class AutorController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<?> consultar(@PathVariable Long id) {
-        var opt = autorRepository.findById(id);
-        if (opt.isPresent()) {
-            return ResponseEntity.ok(opt.get());
+        java.util.Optional<Autor> autor = autorService.consultar(id);
+        if (autor.isPresent()) {
+            return ResponseEntity.ok(autor.get());
         } else {
             return ResponseEntity.status(404).body(Collections.singletonMap("error", "Autor não encontrado."));
         }
@@ -70,8 +68,7 @@ public class AutorController {
      */
     @GetMapping("/buscar")
     public ResponseEntity<List<Autor>> buscarPorNome(@RequestParam String nome) {
-        List<Autor> autores = autorRepository.findByNomeContaining(nome);
-        return ResponseEntity.ok(autores);
+        return ResponseEntity.ok(autorService.buscarPorNome(nome));
     }
 
     /**
@@ -80,7 +77,7 @@ public class AutorController {
     @PostMapping
     public ResponseEntity<?> incluir(@Valid @RequestBody Autor autor) {
         try {
-            Autor salvo = autorRepository.save(autor);
+            Autor salvo = autorService.incluir(autor);
             return ResponseEntity.status(201).body(salvo);
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Collections.singletonMap("error", e.getMessage()));
@@ -92,19 +89,16 @@ public class AutorController {
      */
     @PutMapping("/{id}")
     public ResponseEntity<?> alterar(@PathVariable Long id, @Valid @RequestBody Autor autor) {
-        var opt = autorRepository.findById(id);
-        if (opt.isPresent()) {
-            var autorExistente = opt.get();
-            autorExistente.setNome(autor.getNome());
-            autorExistente.setSobrenome(autor.getSobrenome());
-            autorExistente.setDataNascimento(autor.getDataNascimento());
-            autorExistente.setNacionalidade(autor.getNacionalidade());
-            autorExistente.setBiografia(autor.getBiografia());
-            autorExistente.setAtivo(autor.isAtivo());
-            autorRepository.save(autorExistente);
-            return ResponseEntity.ok().build();
-        } else {
-            return ResponseEntity.status(404).body(Collections.singletonMap("error", "Autor não encontrado para alteração."));
+        try {
+            Autor salvo = autorService.alterar(id, autor);
+            return ResponseEntity.ok(salvo);
+        } catch (RuntimeException e) {
+            if (e.getMessage() != null && e.getMessage().contains("não encontrado")) {
+                return ResponseEntity.status(404).body(Collections.singletonMap("error", e.getMessage()));
+            }
+            return ResponseEntity.status(500).body(Collections.singletonMap("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Collections.singletonMap("error", "Erro ao atualizar autor: " + e.getMessage()));
         }
     }
 
@@ -113,11 +107,19 @@ public class AutorController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> excluir(@PathVariable Long id) {
-        if (autorRepository.existsById(id)) {
-            autorRepository.deleteById(id);
+        try {
+            autorService.excluir(id);
             return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.status(404).body(Collections.singletonMap("error", "Autor não encontrado para exclusão."));
+        } catch (RuntimeException e) {
+            if (e.getMessage() != null && e.getMessage().contains("não encontrado")) {
+                return ResponseEntity.status(404).body(Collections.singletonMap("error", e.getMessage()));
+            }
+            if (e.getMessage() != null && e.getMessage().contains("não é possível excluir")) {
+                return ResponseEntity.status(409).body(Collections.singletonMap("error", e.getMessage()));
+            }
+            return ResponseEntity.status(500).body(Collections.singletonMap("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Collections.singletonMap("error", "Erro ao excluir autor: " + e.getMessage()));
         }
     }
 
@@ -126,14 +128,11 @@ public class AutorController {
      */
     @PatchMapping("/{id}/inativar")
     public ResponseEntity<?> inativar(@PathVariable Long id) {
-        var opt = autorRepository.findById(id);
-        if (opt.isPresent()) {
-            var autor = opt.get();
-            autor.setAtivo(false);
-            Autor salvo = autorRepository.save(autor);
+        try {
+            Autor salvo = autorService.inativar(id);
             return ResponseEntity.ok(salvo);
-        } else {
-            return ResponseEntity.status(404).body(Collections.singletonMap("error", "Autor não encontrado."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(Collections.singletonMap("error", e.getMessage()));
         }
     }
 }
